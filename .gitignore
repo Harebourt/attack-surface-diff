@@ -1,0 +1,14 @@
+# Python virtual environments
+venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS / editor junk
+.DS_Store
+.vscode/
+
+# Data / scans (we'll generate these later)
+data/
