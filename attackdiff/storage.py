@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Dict
 from asset import Asset
+from datetime import datetime, timezone
+
 
 
 class AssetStorage:
@@ -54,3 +56,26 @@ class AssetStorage:
             self.assets[new_asset.id] = new_asset
         else:
             self.assets[new_asset.id] = new_asset
+
+
+class SnapshotStorage:
+    def __init__(self, base_path: str = "data/scans"):
+        self.base_path = Path(base_path)
+        self.base_path.mkdir(parents=True, exist_ok=True)
+
+    def save_snapshot(self, assets: Dict[str, Asset]) -> Path:
+        """
+        Save a full scan snapshot to a timestamped JSON file.
+        """
+        timestamp = datetime.now(timezone.utc).isoformat().replace(":", "-")
+        path = self.base_path / f"{timestamp}.json"
+
+        snapshot = {
+            asset_id: asset.to_dict()
+            for asset_id, asset in assets.items()
+        }
+
+        with open(path, "w") as f:
+            json.dump(snapshot, f, indent=2)
+
+        return path

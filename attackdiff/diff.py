@@ -31,11 +31,19 @@ def diff_assets(
         ports_added = sorted(new_ports - old_ports)
         ports_removed = sorted(old_ports - new_ports)
 
-        if ports_added or ports_removed:
+        old_services = set(old.services)
+        new_services = set(new.services)
+
+        services_added = sorted(new_services - old_services)
+        services_removed = sorted(old_services - new_services)
+
+        if ports_added or ports_removed or services_added or services_removed:
             changed_assets.append({
                 "host": new.host,
                 "ports_added": ports_added,
-                "ports_removed": ports_removed
+                "ports_removed": ports_removed,
+                "services_added": services_added,
+                "services_removed": services_removed
             })
 
     return {
