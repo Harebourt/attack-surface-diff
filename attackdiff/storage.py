@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 from asset import Asset
 from datetime import datetime, timezone
 
@@ -64,18 +64,33 @@ class SnapshotStorage:
         self.base_path.mkdir(parents=True, exist_ok=True)
 
     def save_snapshot(self, assets: Dict[str, Asset]) -> Path:
-        """
-        Save a full scan snapshot to a timestamped JSON file.
-        """
         timestamp = datetime.now(timezone.utc).isoformat().replace(":", "-")
         path = self.base_path / f"{timestamp}.json"
-
-        snapshot = {
-            asset_id: asset.to_dict()
-            for asset_id, asset in assets.items()
-        }
-
+        snapshot = {asset_id: asset.to_dict() for asset_id, asset in assets.items()}
         with open(path, "w") as f:
             json.dump(snapshot, f, indent=2)
-
         return path
+
+    def list_snapshots(self) -> List[Path]:
+        """
+        Return a sorted list of all snapshot files (oldest → newest)
+        """
+        files = sorted(self.base_path.glob("*.json"))
+        return files
+
+    def load_snapshot(self, path: Path) -> Dict[str, Asset]:
+        """
+        Load a snapshot JSON into Asset objects
+        """
+        with open(path, "r") as f:
+            raw = json.load(f)
+        return {aid: Asset.from_dict(data) for aid, data in raw.items()}
+
+    def load_last_two_snapshots(self):
+        """
+        Load the last two snapshots for diffing
+        """
+        snapshots = self.list_snapshots()
+        if len(snapshots) < 2:
+            raise RuntimeError("Not enough snapshots to diff")
+        return self.load_snapshot(snapshots[-2]), self.load_snapshot(snapshots[-1])
