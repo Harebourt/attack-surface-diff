@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "attackdiff"
+version = "0.1.0"
+description = "Attack surface diffing tool"
+requires-python = ">=3.9"
+
+[project.scripts]
+attackdiff = "attackdiff.main:main"
+
+[tool.setuptools]
+packages = ["attackdiff"]

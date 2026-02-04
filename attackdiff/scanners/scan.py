@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-from asset import Asset
+from attackdiff.asset import Asset
 
 
 class Scanner(ABC):

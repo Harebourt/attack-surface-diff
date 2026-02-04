@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Dict, List
-from asset import Asset
+from attackdiff.asset import Asset
 from datetime import datetime, timezone
 
 

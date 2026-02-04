@@ -1,5 +1,5 @@
 from typing import Dict, List
-from asset import Asset
+from attackdiff.asset import Asset
 
 
 def diff_assets(

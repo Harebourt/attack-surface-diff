@@ -1,7 +1,7 @@
-from asset import Asset
-from storage import AssetStorage
-from diff import diff_assets
-from storage import SnapshotStorage
+from attackdiff.asset import Asset
+from attackdiff.storage import AssetStorage
+from attackdiff.diff import diff_assets
+from attackdiff.storage import SnapshotStorage
 
 """
 # Load previous snapshot
@@ -82,10 +82,37 @@ for c in diff["changed_assets"]:
 
 """
 
-from scanners.nmap import NmapScanner
+from attackdiff.cli import build_parser
+from attackdiff.scanners.nmap import NmapScanner
+import os
 
-scanner = NmapScanner()
-assets = scanner.scan(["1.1.1.1", "2.2.2.2", "10.0.0.0/24"])
 
-for asset in assets.values():
-    print(asset.to_dict())
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.command == "scan":
+        # Targets are already a list thanks to nargs="+"
+        targets = args.targets
+
+        if args.scanner == "nmap":
+            # Warn about privileged scan options
+            if args.nmap_args and os.name != "nt":
+                if os.geteuid() != 0:
+                    print("[!] Warning: some Nmap options may require sudo")
+
+            scanner = NmapScanner(
+                extra_args=args.nmap_args
+            )
+        else:
+            raise ValueError(f"Unknown scanner: {args.scanner}")
+
+        # Run scan
+        assets = scanner.scan(targets=targets)
+
+        # Store snapshot
+        storage = SnapshotStorage()
+        snapshot_path = storage.save_snapshot(assets)
+
+        print(f"[+] Scan completed: {snapshot_path}")
+
