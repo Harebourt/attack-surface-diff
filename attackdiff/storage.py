@@ -70,6 +70,20 @@ class SnapshotStorage:
         with open(path, "w") as f:
             json.dump(snapshot, f, indent=2)
         return path
+    
+
+    def resolve_snapshot(self, value: str) -> Path:
+        path = Path(value)
+
+        if path.exists():
+            return path
+
+        candidate = self.base_path / value
+        if candidate.exists():
+            return candidate
+
+        raise FileNotFoundError(f"Snapshot not found: {value}")
+
 
     def list_snapshots(self) -> List[Path]:
         """

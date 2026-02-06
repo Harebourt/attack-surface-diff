@@ -177,16 +177,27 @@ def main():
 
         print(f"[+] Scan completed: {snapshot_path}")
 
-
-
+        
+    
     elif args.command == "diff":
         storage = SnapshotStorage()
+
         if args.last:
             old_assets, new_assets = storage.load_last_two_snapshots()
-            print(old_assets, new_assets)
-            diff = diff_assets(old_assets, new_assets)
 
-            print_diff(diff)
         else:
-            raise RuntimeError("Only --last is supported for now")
+            if not args.to_snapshot:
+                raise SystemExit(
+                    "[!] --from requires --to"
+                )
+
+            old_path = storage.resolve_snapshot(args.from_snapshot)
+            new_path = storage.resolve_snapshot(args.to_snapshot)
+
+            old_assets = storage.load_snapshot(old_path)
+            new_assets = storage.load_snapshot(new_path)
+
+        diff = diff_assets(old_assets, new_assets)
+        print_diff(diff)
+
 

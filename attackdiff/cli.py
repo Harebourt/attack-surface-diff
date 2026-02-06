@@ -43,16 +43,31 @@ def build_parser():
     )
 
         # ---- diff command ----
-    diff = subparsers.add_parser(
-        "diff",
-        help="Diff attack surface snapshots"
+    diff_parser = subparsers.add_parser(
+    "diff",
+    help="Diff two attack surface snapshots"
     )
 
-    diff.add_argument(
+    group = diff_parser.add_mutually_exclusive_group(required=True)
+
+    group.add_argument(
         "--last",
         action="store_true",
         help="Diff the last two snapshots"
     )
+
+    group.add_argument(
+        "--from",
+        dest="from_snapshot",
+        help="Older snapshot file (filename or path)"
+    )
+
+    diff_parser.add_argument(
+        "--to",
+        dest="to_snapshot",
+        help="Newer snapshot file (filename or path)"
+    )
+
 
 
     return parser
