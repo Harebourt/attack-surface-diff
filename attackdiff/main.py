@@ -2,6 +2,9 @@ from attackdiff.asset import Asset
 from attackdiff.storage import AssetStorage
 from attackdiff.diff import diff_assets
 from attackdiff.storage import SnapshotStorage
+from attackdiff.cli import build_parser
+from attackdiff.scanners.nmap import NmapScanner
+import os
 
 """
 # Load previous snapshot
@@ -82,9 +85,67 @@ for c in diff["changed_assets"]:
 
 """
 
-from attackdiff.cli import build_parser
-from attackdiff.scanners.nmap import NmapScanner
-import os
+
+
+
+def print_diff(diff: dict):
+    new = diff.get("new_assets", {})
+    removed = diff.get("missing_assets", {})
+    changed = diff.get("changed_assets", {})
+
+    if (
+    not diff["new_assets"]
+    and not diff["missing_assets"]
+    and not diff["changed_assets"]
+    ):
+        print("[=] No changes detected")
+        return
+
+
+    if new:
+        print("########################################################################\n")
+        print("\n[+] New assets")
+        for asset in new.values():
+            print(f"  + {asset.host} \n \
+        ports : {sorted(asset.ports)}\n \
+        services : {sorted(asset.services)}")
+        print("\n########################################################################")
+
+
+    if removed:
+        print("########################################################################\n")
+        print("\n[-] Removed assets")
+        for asset in removed.values():
+            print(f"  - {asset.host} \n \
+        ports : {sorted(asset.ports)}\n \
+        services : {sorted(asset.services)}")
+        print("\n########################################################################")
+
+
+    if changed:
+        print("########################################################################\n")
+        print("\n[!] Changed assets")
+        for i in changed :
+            print(f"  ~ {i["host"]}")
+
+            added_ports = i.get("ports_added", [])
+            removed_ports = i.get("ports_removed", [])
+            added_services = i.get("services_added", [])
+            removed_services = i.get("services_removed", [])
+
+            if added_ports :
+                print(f"      + ports : {added_ports}")
+            if added_services:
+                print(f"      + services : {added_services}")
+
+            print("\n")
+
+            if removed_ports:
+                print(f"      - ports : {removed_ports}")
+            if removed_services:
+                print(f"      - services : {removed_services}")
+            
+            print("\n")
 
 
 def main():
@@ -115,4 +176,17 @@ def main():
         snapshot_path = storage.save_snapshot(assets)
 
         print(f"[+] Scan completed: {snapshot_path}")
+
+
+
+    elif args.command == "diff":
+        storage = SnapshotStorage()
+        if args.last:
+            old_assets, new_assets = storage.load_last_two_snapshots()
+            print(old_assets, new_assets)
+            diff = diff_assets(old_assets, new_assets)
+
+            print_diff(diff)
+        else:
+            raise RuntimeError("Only --last is supported for now")
 

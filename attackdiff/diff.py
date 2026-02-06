@@ -15,8 +15,8 @@ def diff_assets(
     missing_asset_ids = old_ids - new_ids
     common_asset_ids = old_ids & new_ids
 
-    new_assets_list = [new_assets[aid] for aid in new_asset_ids]
-    missing_assets_list = [old_assets[aid] for aid in missing_asset_ids]
+    new_assets_dict = {aid: new_assets[aid] for aid in new_asset_ids}
+    missing_assets_dict = {aid: old_assets[aid] for aid in missing_asset_ids}
 
     # State-level diffs
     changed_assets = []
@@ -47,7 +47,7 @@ def diff_assets(
             })
 
     return {
-        "new_assets": new_assets_list,
-        "missing_assets": missing_assets_list,
+        "new_assets": new_assets_dict,
+        "missing_assets": missing_assets_dict,
         "changed_assets": changed_assets
     }

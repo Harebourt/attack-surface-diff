@@ -42,4 +42,17 @@ def build_parser():
         help="Optional tag for the scan (e.g. weekly, prod, baseline)"
     )
 
+        # ---- diff command ----
+    diff = subparsers.add_parser(
+        "diff",
+        help="Diff attack surface snapshots"
+    )
+
+    diff.add_argument(
+        "--last",
+        action="store_true",
+        help="Diff the last two snapshots"
+    )
+
+
     return parser
