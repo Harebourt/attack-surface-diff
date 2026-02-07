@@ -68,6 +68,17 @@ def build_parser():
         help="Newer snapshot file (filename or path)"
     )
 
+    list_parser = subparsers.add_parser(
+        "list",
+        help="List available scan snapshots"
+    )
+
+    list_parser.add_argument(
+        "--short",
+        action="store_true",
+        help="Only display snapshot filenames"
+    )
+
 
 
     return parser

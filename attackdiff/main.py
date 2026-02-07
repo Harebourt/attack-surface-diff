@@ -200,4 +200,20 @@ def main():
         diff = diff_assets(old_assets, new_assets)
         print_diff(diff)
 
+    
+    elif args.command == "list":
+        storage = SnapshotStorage()
+        snapshots = storage.list_snapshots()
+
+        if not snapshots:
+            print("[!] No snapshots found")
+            return
+
+        for path in snapshots:
+            if args.short:
+                print(path.name)
+            else:
+                assets = storage.load_snapshot(path)
+                print(f"{path.name:<30} assets: {len(assets)}")
+
 
