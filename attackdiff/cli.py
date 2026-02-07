@@ -68,6 +68,13 @@ def build_parser():
         help="Newer snapshot file (filename or path)"
     )
 
+    diff_parser.add_argument(
+    "--json",
+    action="store_true",
+    help="Output diff as JSON"
+    )
+
+
     list_parser = subparsers.add_parser(
         "list",
         help="List available scan snapshots"
