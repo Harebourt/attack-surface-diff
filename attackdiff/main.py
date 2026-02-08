@@ -34,7 +34,14 @@ def main():
 
         # Store snapshot
         storage = SnapshotStorage()
-        snapshot_path = storage.save_snapshot(assets)
+
+        snapshot_path = storage.save_snapshot(
+            assets,
+            tag=args.tag,
+            scanner=args.scanner
+        )
+
+        print(f"[+] Scan saved: {snapshot_path.name}")
 
         print(f"[+] Scan completed: {snapshot_path}")
 
@@ -76,10 +83,20 @@ def main():
             return
 
         for path in snapshots:
+            meta = storage.load_meta(path)
+            tag = meta.get("tag", "-")
+
             if args.short:
+                if args.tag and meta.get("tag") != args.tag:
+                    continue
                 print(path.name)
+
             else:
+                if args.tag and meta.get("tag") != args.tag:
+                    continue
+
                 assets = storage.load_snapshot(path)
-                print(f"{path.name:<30} assets: {len(assets)}")
+
+                print(f"{path.name:<30} tag: {tag} assets: {len(assets)}")
 
 

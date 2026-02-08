@@ -1,6 +1,7 @@
 import json
 
 def diff_to_json(diff: dict) -> str:
+    """Function that outputs the diff in JSON format"""
     normalized = {
         "new_assets": {
             aid: asset.to_dict()
@@ -17,6 +18,7 @@ def diff_to_json(diff: dict) -> str:
 
 
 def print_diff(diff: dict):
+    """Function for CLI output of the diff"""
     new = diff.get("new_assets", {})
     removed = diff.get("missing_assets", {})
     changed = diff.get("changed_assets", {})

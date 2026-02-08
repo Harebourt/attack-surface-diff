@@ -63,14 +63,35 @@ class SnapshotStorage:
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
 
-    def save_snapshot(self, assets: Dict[str, Asset]) -> Path:
-        timestamp = datetime.now(timezone.utc).isoformat().replace(":", "-")
-        path = self.base_path / f"{timestamp}.json"
-        snapshot = {asset_id: asset.to_dict() for asset_id, asset in assets.items()}
+    def save_snapshot(
+        self,
+        assets: Dict[str, Asset],
+        tag: str | None = None,
+        scanner: str | None = None
+    ) -> Path:
+        timestamp = datetime.now(timezone.utc).isoformat()
+
+        snapshot = {
+            "meta": {
+                "timestamp": timestamp,
+                "tag": tag,
+                "scanner": scanner
+            },
+            "assets": {
+                asset_id: asset.to_dict()
+                for asset_id, asset in assets.items()
+            }
+        }
+
+        filename = timestamp.replace(":", "-") + ".json"
+        path = self.base_path / filename
+
         with open(path, "w") as f:
             json.dump(snapshot, f, indent=2)
+
         return path
     
+
 
     def resolve_snapshot(self, value: str) -> Path:
         path = Path(value)
@@ -85,6 +106,7 @@ class SnapshotStorage:
         raise FileNotFoundError(f"Snapshot not found: {value}")
 
 
+
     def list_snapshots(self) -> List[Path]:
         """
         Return a sorted list of all snapshot files (oldest → newest)
@@ -92,13 +114,24 @@ class SnapshotStorage:
         files = sorted(self.base_path.glob("*.json"))
         return files
 
+
     def load_snapshot(self, path: Path) -> Dict[str, Asset]:
         """
         Load a snapshot JSON into Asset objects
         """
         with open(path, "r") as f:
             raw = json.load(f)
-        return {aid: Asset.from_dict(data) for aid, data in raw.items()}
+
+        assets_raw = raw.get("assets", {})
+
+        return {aid: Asset.from_dict(data) for aid, data in assets_raw.items()}
+
+
+    def load_meta(self, path: Path) -> dict:
+        with open(path, "r") as f:
+            raw = json.load(f)
+        return raw.get("meta", {})
+
 
     def load_last_two_snapshots(self):
         """

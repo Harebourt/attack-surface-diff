@@ -86,6 +86,11 @@ def build_parser():
         help="Only display snapshot filenames"
     )
 
+    list_parser.add_argument(
+    "--tag",
+    help="Only list snapshots with this tag"
+    )
+
 
 
     return parser

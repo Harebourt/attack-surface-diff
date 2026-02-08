@@ -12,7 +12,7 @@ class NmapScanner:
         if not isinstance(targets, list):
             raise TypeError("targets must be a list")
 
-        cmd = ["nmap"]
+        cmd = ["nmap", "-Pn"]
 
         if self.extra_args:
             cmd += shlex.split(self.extra_args)
@@ -39,11 +39,20 @@ class NmapScanner:
 
         for host in root.findall("host"):
             status = host.find("status").attrib.get("state")
+            addr = host.find("address").attrib.get("addr")
+            print("DEBUG host:", addr, "status:", status)
             if status != "up":
                 continue
 
-            addr = host.find("address")
-            ip = addr.attrib.get("addr")
+            ip = None
+            for addr in host.findall("address"):
+                if addr.attrib.get("addrtype") in ("ipv4", "ipv6"):
+                    ip = addr.attrib.get("addr")
+                    break
+
+            if ip is None:
+                continue  # no usable IP, skip host
+
 
             ports = []
             services = []
@@ -69,6 +78,7 @@ class NmapScanner:
                 services=services,
                 sources=["nmap"]
             )
+
 
             assets[asset.id] = asset
 
