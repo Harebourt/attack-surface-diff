@@ -50,14 +50,21 @@ def main():
     elif args.command == "diff":
         storage = SnapshotStorage()
 
+        # ---- Mode 1: last ----
         if args.last:
+            if args.from_snapshot or args.to_snapshot or args.from_tag or args.to_tag:
+                raise SystemExit("[!] --last cannot be combined with other diff options")
+
             old_assets, new_assets = storage.load_last_two_snapshots()
 
-        else:
-            if not args.to_snapshot:
-                raise SystemExit(
-                    "[!] --from requires --to"
-                )
+        # ---- Mode 2: explicit snapshots ----
+        elif args.from_snapshot or args.to_snapshot:
+
+            if args.from_tag or args.to_tag:
+                raise SystemExit("[!] --from/--to cannot be combined with tags")
+            
+            if not (args.from_snapshot and args.to_snapshot):
+                raise SystemExit("[!] --from requires --to")
 
             old_path = storage.resolve_snapshot(args.from_snapshot)
             new_path = storage.resolve_snapshot(args.to_snapshot)
@@ -65,13 +72,31 @@ def main():
             old_assets = storage.load_snapshot(old_path)
             new_assets = storage.load_snapshot(new_path)
 
+        # ---- Mode 3: tags ----
+        elif args.from_tag or args.to_tag:
+            if not (args.from_tag and args.to_tag):
+                raise SystemExit("[!] --from-tag requires --to-tag")
+
+            from_path = storage.find_snapshot_by_tag(args.from_tag)
+            to_path = storage.find_snapshot_by_tag(args.to_tag)
+
+            old_assets = storage.load_snapshot(from_path)
+            new_assets = storage.load_snapshot(to_path)
+
+        else:
+            raise SystemExit(
+                "[!] You must specify one diff mode: "
+                "--last OR --from/--to OR --from-tag/--to-tag"
+            )
+
         diff = diff_assets(old_assets, new_assets)
-        
+
         if args.json:
             from attackdiff.output import diff_to_json
             print(diff_to_json(diff))
         else:
             print_diff(diff)
+
 
     
     elif args.command == "list":

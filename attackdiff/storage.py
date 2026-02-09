@@ -141,3 +141,18 @@ class SnapshotStorage:
         if len(snapshots) < 2:
             raise RuntimeError("Not enough snapshots to diff")
         return self.load_snapshot(snapshots[-2]), self.load_snapshot(snapshots[-1])
+    
+
+
+    def find_snapshot_by_tag(self, tag: str) -> Path:
+        """
+        Return the most recent snapshot with the given tag
+        """
+        snapshots = self.list_snapshots()
+
+        for path in reversed(snapshots):  # newest first
+            meta = self.load_meta(path)
+            if meta.get("tag") == tag:
+                return path
+
+        raise RuntimeError(f"No snapshot found with tag '{tag}'")

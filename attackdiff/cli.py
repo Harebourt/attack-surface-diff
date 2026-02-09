@@ -48,7 +48,7 @@ def build_parser():
     help="Diff two attack surface snapshots"
     )
 
-    group = diff_parser.add_mutually_exclusive_group(required=True)
+    group = diff_parser.add_mutually_exclusive_group()
 
     group.add_argument(
         "--last",
@@ -74,6 +74,15 @@ def build_parser():
     help="Output diff as JSON"
     )
 
+    diff_parser.add_argument(
+    "--from-tag",
+    help="Tag of the base snapshot"
+    )
+
+    diff_parser.add_argument(
+        "--to-tag",
+        help="Tag of the target snapshot"
+    )
 
     list_parser = subparsers.add_parser(
         "list",
