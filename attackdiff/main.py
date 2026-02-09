@@ -134,3 +134,44 @@ def main():
                 print(f"{path.name:<30} tag: {tag} assets: {len(assets)}")
 
 
+    elif args.command == "prune":
+        storage = SnapshotStorage()
+
+        result = storage.prune(
+            keep_last=args.keep_last,
+            keep_days=args.keep_days,
+            dry_run=args.dry_run,
+            tag=args.tag
+        )
+
+        if args.dry_run:
+            for d in result["decisions"]:
+                label = "[KEEP]" if d["action"] == "keep" else "[DELETE]"
+                print(
+                    f"{label:<8} {d['path'].name} "
+                    f"(reason: {d['reason']})"
+                )
+        else:
+            print(f"Deleted {result['deleted']} snapshots")
+
+
+
+"""
+Example commands :
+
+attackdiff scan --scanner nmap --targets 1.1.1.1 1.1.1.2 --nmap-arg="-sS -p80"
+
+attackdiff diff --from file1.json --to file2.json
+
+attackdiff diff --last
+
+attackdiff diff --from-tag tag1 --to-tag tag2
+
+attackdiff diff --since tag1 --json
+
+attackdiff list --short
+
+attackdiff list 
+
+attackdiff list --tag tag1
+"""

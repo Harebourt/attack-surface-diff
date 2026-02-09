@@ -106,5 +106,35 @@ def build_parser():
     )
 
 
+    prune_parser = subparsers.add_parser(
+    "prune",
+    help="Delete old snapshots based on retention rules"
+    )
+
+    prune_parser.add_argument(
+        "--keep-last",
+        type=int,
+        default=10,
+        help="Number of most recent untagged snapshots to always keep (default: 10, use 0 to disable)"
+    )
+
+    prune_parser.add_argument(
+        "--keep-days",
+        type=int,
+        help="Keep snapshots newer than N days"
+    )
+
+    prune_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show what would be deleted without deleting"
+    )
+
+    prune_parser.add_argument(
+    "--tag",
+    help="Only prune snapshots with this tag"
+    )
+
+
 
     return parser

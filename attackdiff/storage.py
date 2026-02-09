@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Dict, List
 from attackdiff.asset import Asset
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 
@@ -163,4 +163,171 @@ class SnapshotStorage:
         if not snapshots:
             raise RuntimeError("No snapshots available")
         return snapshots[-1]
+    
+
+    def _parse_snapshot_meta(self, path: Path) -> dict:
+        with open(path, "r") as f:
+            raw = json.load(f)
+
+        meta = raw.get("meta", {})
+
+        timestamp = meta.get("timestamp")
+        tag = meta.get("tag")
+
+        created_at = datetime.fromisoformat(timestamp)
+
+        return {
+            "path": path,
+            "created_at": created_at,
+            "tag": tag
+        }
+
+
+    def list_snapshots_with_meta(self):
+        snapshots = []
+
+        for path in self.base_path.glob("*.json"):
+            try:
+                snapshots.append(self._parse_snapshot_meta(path))
+            except Exception:
+                # corrupted snapshot → skip
+                continue
+
+        return snapshots
+
+    
+
+    def prune(
+        self,
+        keep_last: int = 10,
+        keep_days: int | None = None,
+        dry_run: bool = False,
+        tag: str | None = None,
+    ) -> dict:
+        
+        snapshots = self.list_snapshots_with_meta()
+        now = datetime.now(timezone.utc)
+
+        decisions = []
+        keep = set()
+
+        # -------------------------------
+        # MODE 1: Scoped prune by tag
+        # -------------------------------
+        if tag:
+            scoped = [s for s in snapshots if s["tag"] == tag]
+
+            # Sort newest → oldest
+            scoped.sort(key=lambda s: s["created_at"], reverse=True)
+
+            # Keep last N
+            for s in scoped[:keep_last]:
+                keep.add(s["path"])
+                decisions.append({
+                    "path": s["path"],
+                    "action": "keep",
+                    "reason": f"keep-last (tag={tag})",
+                    "tag": s["tag"],
+                    "created_at": s["created_at"],
+                })
+
+            # Keep by age
+            if keep_days is not None:
+                cutoff = now - timedelta(days=keep_days)
+                for s in scoped:
+                    if s["created_at"] >= cutoff:
+                        keep.add(s["path"])
+                        decisions.append({
+                            "path": s["path"],
+                            "action": "keep",
+                            "reason": f"within keep-days (tag={tag})",
+                            "tag": s["tag"],
+                            "created_at": s["created_at"],
+                        })
+
+            # Delete the rest
+            for s in scoped:
+                if s["path"] not in keep:
+                    decisions.append({
+                        "path": s["path"],
+                        "action": "delete",
+                        "reason": f"expired (tag={tag})",
+                        "tag": s["tag"],
+                        "created_at": s["created_at"],
+                    })
+                    if not dry_run:
+                        s["path"].unlink(missing_ok=True)
+
+            return {
+                "dry_run": dry_run,
+                "decisions": decisions
+            }
+
+        # -------------------------------
+        # MODE 2: Global prune (no tag)
+        # -------------------------------
+        tagged = [s for s in snapshots if s["tag"]]
+        untagged = [s for s in snapshots if not s["tag"]]
+
+        # Keep all tagged forever
+        for s in tagged:
+            keep.add(s["path"])
+            decisions.append({
+                "path": s["path"],
+                "action": "keep",
+                "reason": f"tag={s['tag']}",
+                "tag": s["tag"],
+                "created_at": s["created_at"],
+            })
+
+        # Sort untagged newest → oldest
+        untagged.sort(key=lambda s: s["created_at"], reverse=True)
+
+        # Keep by age
+        if keep_days is not None:
+            cutoff = now - timedelta(days=keep_days)
+            for s in untagged:
+                if s["created_at"] >= cutoff:
+                    keep.add(s["path"])
+                    decisions.append({
+                        "path": s["path"],
+                        "action": "keep",
+                        "reason": "within keep-days",
+                        "tag": None,
+                        "created_at": s["created_at"],
+                    })
+
+        # Keep last N untagged
+        remaining = [s for s in untagged if s["path"] not in keep]
+        for s in remaining[:keep_last]:
+            keep.add(s["path"])
+            decisions.append({
+                "path": s["path"],
+                "action": "keep",
+                "reason": "keep-last",
+                "tag": None,
+                "created_at": s["created_at"],
+            })
+
+        # Delete the rest
+        for s in untagged:
+            if s["path"] not in keep:
+                decisions.append({
+                    "path": s["path"],
+                    "action": "delete",
+                    "reason": "expired",
+                    "tag": None,
+                    "created_at": s["created_at"],
+                })
+                if not dry_run:
+                    s["path"].unlink(missing_ok=True)
+
+        return {
+            "dry_run": dry_run,
+            "decisions": decisions
+        }
+
+
+
+
 
