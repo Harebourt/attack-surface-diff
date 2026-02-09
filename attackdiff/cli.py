@@ -84,6 +84,11 @@ def build_parser():
         help="Tag of the target snapshot"
     )
 
+    diff_parser.add_argument(
+    "--since",
+    help="Diff from a tagged snapshot to the latest snapshot"
+    )
+
     list_parser = subparsers.add_parser(
         "list",
         help="List available scan snapshots"

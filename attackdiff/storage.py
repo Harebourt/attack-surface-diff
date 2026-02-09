@@ -156,3 +156,11 @@ class SnapshotStorage:
                 return path
 
         raise RuntimeError(f"No snapshot found with tag '{tag}'")
+    
+
+    def get_latest_snapshot(self) -> Path:
+        snapshots = self.list_snapshots()
+        if not snapshots:
+            raise RuntimeError("No snapshots available")
+        return snapshots[-1]
+

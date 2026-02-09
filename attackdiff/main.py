@@ -83,11 +83,20 @@ def main():
             old_assets = storage.load_snapshot(from_path)
             new_assets = storage.load_snapshot(to_path)
 
+        # ---- Mode 4: since ----
+        elif args.since:
+            base_path = storage.find_snapshot_by_tag(args.since)
+            latest_path = storage.get_latest_snapshot()
+
+            old_assets = storage.load_snapshot(base_path)
+            new_assets = storage.load_snapshot(latest_path)
+
         else:
             raise SystemExit(
                 "[!] You must specify one diff mode: "
-                "--last OR --from/--to OR --from-tag/--to-tag"
+                "--last OR --from/--to OR --from-tag/--to-tag OR --since"
             )
+        
 
         diff = diff_assets(old_assets, new_assets)
 
