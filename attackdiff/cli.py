@@ -114,7 +114,6 @@ def build_parser():
     prune_parser.add_argument(
         "--keep-last",
         type=int,
-        default=10,
         help="Number of most recent untagged snapshots to always keep (default: 10, use 0 to disable)"
     )
 
@@ -135,6 +134,11 @@ def build_parser():
     help="Only prune snapshots with this tag"
     )
 
+    prune_parser.add_argument(
+    "--force",
+    action="store_true",
+    help="Allow pruning without any retention rule (DANGEROUS)"
+    )
 
 
     return parser

@@ -199,7 +199,7 @@ class SnapshotStorage:
 
     def prune(
         self,
-        keep_last: int = 10,
+        keep_last: int | None = None,
         keep_days: int | None = None,
         dry_run: bool = False,
         tag: str | None = None,
@@ -326,6 +326,13 @@ class SnapshotStorage:
             "dry_run": dry_run,
             "decisions": decisions
         }
+    
+    def has_retention_rule(self, args) -> bool:
+        return any([
+            args.keep_last is not None,
+            args.keep_days is not None,
+        ])
+
 
 
 

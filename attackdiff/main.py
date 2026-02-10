@@ -6,6 +6,7 @@ from attackdiff.cli import build_parser
 from attackdiff.scanners.nmap import NmapScanner
 from attackdiff.output import print_diff, diff_to_json
 import os
+import sys
 
 
 
@@ -137,6 +138,25 @@ def main():
     elif args.command == "prune":
         storage = SnapshotStorage()
 
+        print(args)
+        print(storage.has_retention_rule(args))
+
+        if (not storage.has_retention_rule(args)) and (not args.force):
+            print("Refusing to prune without a retention rule.")
+            print("Use at least one --keep-* option or add --force. Using --force without retention rule will delete the last 10 UNTAGGED snapshots")
+            sys.exit(1)
+
+        # Apply default retention policy ONLY if allowed
+        if not storage.has_retention_rule(args):
+            args.keep_last = 10
+
+        if (args.force) and (not storage.has_retention_rule(args)):
+            print("⚠️  WARNING: --force used without retention rules.")
+            print("⚠️  This may delete ALL stored scans.")
+
+        if args.force and args.dry_run:
+            print("Dry-run active: no files will actually be deleted.")
+
         result = storage.prune(
             keep_last=args.keep_last,
             keep_days=args.keep_days,
@@ -152,7 +172,11 @@ def main():
                     f"(reason: {d['reason']})"
                 )
         else:
-            print(f"Deleted {result['deleted']} snapshots")
+            i = 0
+            for d in result["decisions"]:
+                if d["action"] == "delete" :
+                    i+=1
+            print(f"Deleted {i} snapshots")
 
 
 
@@ -174,4 +198,8 @@ attackdiff list --short
 attackdiff list 
 
 attackdiff list --tag tag1
+
+attackdiff prune --keep-last 10 --keep-days 30
+
+attackdiff prune --keep-last 10 --tag tag1 --dry-run
 """
