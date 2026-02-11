@@ -187,6 +187,13 @@ def main():
 
             sys.exit(0)
         
+
+        elif args.command == "doctor":
+            from attackdiff.doctor import run_doctor
+            exit_code = run_doctor()
+            raise SystemExit(exit_code)
+
+        
     except ValueError as e:
         print(f"[!] {e}")
         sys.exit(1)
@@ -219,6 +226,8 @@ attackdiff list --tag tag1
 attackdiff prune --keep-last 10 --keep-days 30
 
 attackdiff prune --keep-last 10 --tag tag1 --dry-run
+
+attackdiff doctor
 
 
 

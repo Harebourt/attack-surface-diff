@@ -140,5 +140,12 @@ def build_parser():
     help="Allow pruning without any retention rule (DANGEROUS)"
     )
 
+    # ---- doctor command ----
+    doctor_parser = subparsers.add_parser(
+        "doctor",
+        help="Check installation and environment health"
+    )
+
+
 
     return parser
