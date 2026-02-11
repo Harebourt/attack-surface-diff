@@ -20,7 +20,7 @@ def build_parser():
     scan_parser.add_argument(
         "--scanner",
         required=True,
-        choices=["nmap"],  # extensible later
+        choices=["nmap", "subfinder"],
         help="Scanner to use"
     )
 
@@ -41,6 +41,14 @@ def build_parser():
         "--tag",
         help="Optional tag for the scan (e.g. weekly, prod, baseline)"
     )
+
+    scan_parser.add_argument(
+        "--subfinder-args",
+        default="",
+        help="Extra arguments passed directly to subfinder"
+    )
+
+
 
         # ---- diff command ----
     diff_parser = subparsers.add_parser(

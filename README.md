@@ -28,15 +28,15 @@ DISCLAIMER : Please only use this tool on IP / domains you own, or if you have a
 
 Cron relies on exit codes to detect failures.
 
-### More Examples:
-# Weekly diff against baseline (Sunday 03:00)
+## More Examples:
+### Weekly diff against baseline (Sunday 03:00)
 0 3 * * 0 attackdiff diff --since baseline >> ~/attackdiff.log 2>&1
 
-# Daily prune: keep last 10 untagged snapshots and 7 days of history
+### Daily prune: keep last 10 untagged snapshots and 7 days of history
 30 2 * * * attackdiff prune --keep-last 10 --keep-days 7 >> ~/attackdiff.log 2>&1
 
-# Weekly prune of a specific tag, keep last 3
+### Weekly prune of a specific tag, keep last 3
 0 4 * * 0 attackdiff prune --tag baseline --keep-last 3 >> ~/attackdiff.log 2>&1
 
-# Dry-run prune report every day
+### Dry-run prune report every day
 0 1 * * * attackdiff prune --dry-run --keep-days 3 >> ~/attackdiff.log 2>&1

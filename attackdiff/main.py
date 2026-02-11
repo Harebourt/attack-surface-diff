@@ -4,6 +4,7 @@ from attackdiff.diff import diff_assets
 from attackdiff.storage import SnapshotStorage
 from attackdiff.cli import build_parser
 from attackdiff.scanners.nmap import NmapScanner
+from attackdiff.scanners.subfinder_scanner import SubfinderScanner
 from attackdiff.output import print_diff, diff_to_json
 import os
 import sys
@@ -28,6 +29,10 @@ def main():
                 scanner = NmapScanner(
                     extra_args=args.nmap_args
                 )
+
+            elif args.scanner == "subfinder":
+                scanner = SubfinderScanner(extra_args=args.subfinder_args)
+
             else:
                 raise ValueError(f"Unknown scanner: {args.scanner}")
 
