@@ -31,7 +31,11 @@ def main():
                 )
 
             elif args.scanner == "subfinder":
-                scanner = SubfinderScanner(extra_args=args.subfinder_args)
+                scanner = SubfinderScanner(
+                    extra_args=args.subfinder_args,
+                    use_httpx=args.httpx,
+                    httpx_args=args.httpx_args
+                )
 
             else:
                 raise ValueError(f"Unknown scanner: {args.scanner}")

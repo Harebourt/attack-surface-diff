@@ -48,6 +48,17 @@ def build_parser():
         help="Extra arguments passed directly to subfinder"
     )
 
+    scan_parser.add_argument(
+        "--httpx",
+        action="store_true",
+        help="Run httpx on discovered domains (subfinder only)"
+    )
+
+    scan_parser.add_argument(
+        "--httpx-args",
+        default="",
+        help="Extra arguments passed to httpx"
+    )
 
 
         # ---- diff command ----
